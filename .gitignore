@@ -11,3 +11,5 @@ release/
 .DS_Store
 .idea/
 .vscode/
+mulch/records/
+mulch/config.json

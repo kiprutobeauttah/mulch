@@ -69,6 +69,13 @@
   const outCaseId = $('outCaseId');
   const printDate = $('printDate');
   const printCaseId = $('printCaseId');
+  const storagePath = $('storagePath');
+  const storageInput = $('storageInput');
+  const storageForm = $('storageForm');
+  const storageSet = $('storageSet');
+  const storageReset = $('storageReset');
+  const storageCancel = $('storageCancel');
+  const storageMsg = $('storageMsg');
 
   const recordsOverlay = $('recordsOverlay');
   const closeRecords = $('closeRecords');
@@ -84,8 +91,8 @@
 
   const LEVEL_TEXT = {
     high: 'Confident automated finding.',
-    medium: 'Moderate certainty — correlate with clinical context.',
-    low: 'Ambiguous pattern — verify manually before acting.',
+    medium: 'Moderate certainty- correlate with clinical context.',
+    low: 'Ambiguous pattern- verify manually before acting.',
   };
 
   const DX_ICON = { NORMAL: 'check-circle', PNEUMONIA: 'alert-triangle' };
@@ -398,6 +405,48 @@
     printCaseId.textContent = (r.image_id || r.case_id || 'pending').toString().toUpperCase();
     window.print();
   }
+
+  function showStorageForm() {
+    storageInput.value = storagePath.textContent === '…' ? '' : storagePath.textContent;
+    storageMsg.textContent = '';
+    storageMsg.className = 'storage-msg';
+    storageForm.hidden = false;
+    storageInput.focus();
+  }
+
+  function setStoragePath(dir) {
+    storagePath.textContent = dir;
+    storagePath.title = dir;
+  }
+
+  async function loadSettings() {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      if (res.ok && data.data_dir) setStoragePath(data.data_dir);
+    } catch {}
+  }
+
+  async function persistStorage(payload) {
+    storageMsg.textContent = 'Saving…';
+    storageMsg.className = 'storage-msg';
+    try {
+      const res = await fetch('/api/settings/storage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not update storage.');
+      setStoragePath(data.data_dir);
+      storageForm.hidden = true;
+      storageMsg.textContent = 'Records storage updated.';
+      storageMsg.className = 'storage-msg ok';
+    } catch (err) {
+      storageMsg.textContent = err.message;
+      storageMsg.className = 'storage-msg err';
+    }
+  }
   stage.addEventListener('click', (e) => { if (!selectedFile) fileInput.click(); });
   stage.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
@@ -421,6 +470,14 @@
   recordsOverlay.addEventListener('click', (e) => { if (e.target === recordsOverlay) closeRecordsOverlay(); });
   recordSearch.addEventListener('input', renderRecords);
 
+  storageSet.addEventListener('click', showStorageForm);
+  storageCancel.addEventListener('click', () => { storageForm.hidden = true; });
+  storageReset.addEventListener('click', () => persistStorage({ default: true }));
+  storageForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    persistStorage({ data_dir: storageInput.value.trim() });
+  });
+
   ['dragenter', 'dragover'].forEach((ev) =>
     stage.addEventListener(ev, (e) => { e.preventDefault(); stage.classList.add('dragover'); }));
   ['dragleave', 'drop'].forEach((ev) =>
@@ -434,6 +491,7 @@
   });
 
   setModelNote();
+  loadSettings();
   hydrateIcons();
   modelStatus.classList.add('ready');
   modelStatus.textContent = MODELS.length + ' model' + (MODELS.length === 1 ? '' : 's') + ' ready';

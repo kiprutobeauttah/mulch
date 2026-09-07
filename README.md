@@ -8,6 +8,10 @@ screening. It runs a DenseNet121 classifier locally, highlights suspicious regio
 attention heatmaps, and saves every assessment with patient details and structured diagnosis
 outputs. All inference runs on-device; no patient data leaves the machine.
 
+![Mulch - main assessment](.img/mulch-scrn1.png)
+![Mulch - diagnosis report](.img/mulch-scrn2.png)
+![Mulch - saved assessments](.img/mulch-scrn3.png)
+
 ---
 
 ## Prerequisites

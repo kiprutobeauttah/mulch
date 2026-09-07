@@ -100,7 +100,7 @@ def api_predict():
     if file.content_type and not file.content_type.startswith("image/"):
         return jsonify({"error": "Uploaded file is not an image."}), 400
 
-    model_key = request.form.get("model", "frozen_best")
+    model_key = request.form.get("model") or next(iter(MODEL_REGISTRY))
     if model_key not in MODEL_REGISTRY:
         return jsonify({"error": f"Unknown model '{model_key}'."}), 400
 
@@ -170,6 +170,29 @@ def api_record_delete(case_id):
     if records.delete_record(case_id):
         return jsonify({"ok": True})
     return jsonify({"error": "Record not found."}), 404
+
+
+@app.route("/api/settings")
+def api_settings():
+    return jsonify(records.get_settings())
+
+
+@app.route("/api/settings/storage", methods=["POST"])
+def api_settings_storage():
+    body = request.get_json(silent=True) or {}
+    if body.get("default"):
+        info = records.reset_data_dir()
+    else:
+        path = (body.get("data_dir") or "").strip()
+        if not path:
+            return jsonify({"error": "Storage path is required."}), 400
+        if not os.path.isabs(os.path.expanduser(path)):
+            return jsonify({"error": "Store records in an absolute path, e.g. /home/user/mulch-storage."}), 400
+        try:
+            info = records.set_data_dir(path)
+        except Exception as exc:
+            return jsonify({"error": f"Could not use that path: {exc}"}), 400
+    return jsonify({"ok": True, **info})
 
 
 def serve(port=None):

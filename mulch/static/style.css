@@ -68,16 +68,6 @@ body {
   padding: 4px 8px 16px;
   border-bottom: 1px solid var(--border);
 }
-.side-logo {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--primary), #2dd4bf);
-  color: #062a26;
-  display: grid;
-  place-items: center;
-}
-.side-logo svg { width: 18px; height: 18px; }
 .side-name { font-size: 15px; font-weight: 700; letter-spacing: .02em; color: var(--foreground); }
 
 .side-nav { display: flex; flex-direction: column; gap: 4px; margin-top: 18px; flex: 1; }
@@ -116,6 +106,34 @@ body {
   white-space: nowrap;
 }
 .status-pill.ready { color: var(--normal); background: var(--normal-soft); }
+
+.storage-box {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fafbfc;
+}
+.storage-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-foreground); }
+.storage-path {
+  display: block;
+  font: 600 11px var(--mono);
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: left;
+}
+.storage-actions { display: flex; gap: 6px; }
+.storage-form { display: flex; flex-direction: column; gap: 8px; }
+.storage-form-actions { display: flex; gap: 6px; }
+.storage-msg { margin: 0; font-size: 11px; line-height: 1.5; color: var(--muted-foreground); }
+.storage-msg.ok { color: var(--normal); }
+.storage-msg.err { color: var(--destructive); }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 7px; }
 
 .main { margin-left: 240px; padding: 30px 38px 26px; max-width: 1440px; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
@@ -581,8 +599,6 @@ body {
     margin-bottom: 18px;
   }
   .print-brand { display: flex; align-items: center; gap: 10px; }
-  .print-logo { width: 34px; height: 34px; border-radius: 8px; background: #0c1a26; color: #2dd4bf; display: grid; place-items: center; }
-  .print-logo svg { width: 18px; height: 18px; }
   .print-name { font-size: 17px; font-weight: 800; letter-spacing: .01em; }
   .print-tag { font-size: 10.5px; color: #5b6474; letter-spacing: .06em; }
   .print-meta { display: flex; gap: 22px; }

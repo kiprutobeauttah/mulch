@@ -119,7 +119,7 @@ def interpretation(verdict: str, level: str) -> str:
             return ("Moderate-confidence finding. Lung opacity compatible with "
                     "pneumonia may be present; consider repeat imaging or "
                     "correlation with clinical and laboratory findings.")
-        return ("Low-confidence finding. Automated pattern is inconclusive — "
+        return ("Low-confidence finding. Automated pattern is inconclusive- "
                 "exercise caution and weigh the full radiograph and patient "
                 "context before any clinical decision.")
     if level == "high":
@@ -127,9 +127,9 @@ def interpretation(verdict: str, level: str) -> str:
                 "Still interpret alongside the full study and clinical "
                 "presentation.")
     if level == "medium":
-        return ("Moderate-confidence normal reading. Some uncertainty remains — "
+        return ("Moderate-confidence normal reading. Some uncertainty remains- "
                 "interpret in the light of the entire radiograph.")
-    return ("Low-confidence normal reading. Automated pattern is inconclusive — "
+    return ("Low-confidence normal reading. Automated pattern is inconclusive- "
             "verify manually and correlate with clinical findings.")
 
 

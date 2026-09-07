@@ -11,7 +11,6 @@
 
   <aside class="sidebar">
     <div class="side-brand">
-      <span class="side-logo ic" data-icon="activity"></span>
       <span class="side-name">Mulch</span>
     </div>
 
@@ -28,6 +27,22 @@
     </nav>
 
     <div class="side-foot">
+      <div class="storage-box">
+        <span class="storage-label">Records storage</span>
+        <code class="storage-path" id="storagePath" title="">…</code>
+        <form class="storage-form" id="storageForm" hidden>
+          <input type="text" id="storageInput" class="input" placeholder="/absolute/path/to/folder" spellcheck="false">
+          <div class="storage-form-actions">
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="storageCancel">Cancel</button>
+          </div>
+          <p class="storage-msg" id="storageMsg"></p>
+        </form>
+        <div class="storage-actions">
+          <button type="button" class="btn btn-outline btn-sm" id="storageSet">Change…</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="storageReset">Use default</button>
+        </div>
+      </div>
       <span class="status-pill" id="modelStatus">loading models…</span>
       <p class="side-credit">Mulch · developed by <b>beauttahkipruto</b></p>
     </div>
@@ -37,7 +52,6 @@
 
     <header class="print-head">
       <div class="print-brand">
-        <span class="print-logo ic" data-icon="activity"></span>
         <div>
           <div class="print-name">Mulch</div>
           <div class="print-tag">Chest X-Ray · AI-Assisted Screening</div>
@@ -226,7 +240,7 @@
     </div>
 
     <footer class="footer">
-      Mulch is an AI-assisted screening aid — decision support only, never a substitute for a qualified
+      Mulch is an AI-assisted screening aid- decision support only, never a substitute for a qualified
       clinical diagnosis. Interpret all findings in the context of the full radiograph and patient history.
     </footer>
 
