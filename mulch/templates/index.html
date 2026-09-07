@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mulch</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="side-brand">
+      <span class="side-logo ic" data-icon="activity"></span>
+      <span class="side-name">Mulch</span>
+    </div>
+
+    <nav class="side-nav">
+      <a class="side-link active" href="#top">
+        <i class="ic" data-icon="file-text"></i><span>New assessment</span>
+      </a>
+      <button class="side-link" id="recordsBtn" type="button">
+        <i class="ic" data-icon="database"></i><span>Saved assessments</span>
+      </button>
+      <button class="side-link" id="printBtn" type="button" disabled>
+        <i class="ic" data-icon="printer"></i><span>Print report</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <span class="status-pill" id="modelStatus">loading models…</span>
+      <p class="side-credit">Mulch · developed by <b>beauttahkipruto</b></p>
+    </div>
+  </aside>
+
+  <div class="main" id="top">
+
+    <header class="print-head">
+      <div class="print-brand">
+        <span class="print-logo ic" data-icon="activity"></span>
+        <div>
+          <div class="print-name">Mulch</div>
+          <div class="print-tag">Chest X-Ray · AI-Assisted Screening</div>
+        </div>
+      </div>
+      <div class="print-meta">
+        <div class="print-meta-item"><span>Report date</span><strong id="printDate" class="mono"></strong></div>
+        <div class="print-meta-item"><span>Case ID</span><strong id="printCaseId" class="mono"></strong></div>
+      </div>
+    </header>
+
+    <header class="page-head">
+      <div>
+        <h1 class="page-title">New assessment</h1>
+        <p class="page-sub">Upload a chest X-ray to generate a structured pneumonia screening report.</p>
+      </div>
+    </header>
+
+    <div class="dash-grid">
+
+      <!-- ============ Patient & study ============ -->
+      <section class="card study-col">
+        <header class="card-head">
+          <h2 class="card-title"><i class="ic" data-icon="user"></i> Patient &amp; study</h2>
+        </header>
+        <div class="card-body">
+
+          <form class="patient-form" id="patientForm" autocomplete="off">
+            <div class="grid-2">
+              <div class="field">
+                <label class="field-label" for="patientName">Patient name <em class="req">*</em></label>
+                <input type="text" id="patientName" class="input" placeholder="Full name" maxlength="80">
+              </div>
+              <div class="field">
+                <label class="field-label" for="patientMrn">MRN / record no.</label>
+                <input type="text" id="patientMrn" class="input" placeholder="Patient identifier" maxlength="40">
+              </div>
+              <div class="field">
+                <label class="field-label" for="patientSex">Sex</label>
+                <select id="patientSex" class="select">
+                  <option value="">—</option>
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="scanDate">Study date</label>
+                <input type="date" id="scanDate" class="input">
+              </div>
+            </div>
+          </form>
+
+          <label class="field-label field-gap" for="fileInput">Radiograph</label>
+          <div class="stage" id="stage" tabindex="0" role="button" aria-label="Upload chest X-ray image">
+            <input type="file" id="fileInput" accept="image/*" hidden>
+            <div class="dropzone-inner" id="dropzoneInner">
+              <i class="upload-icon ic" data-icon="upload-cloud"></i>
+              <p class="drop-title">Drop a chest X-ray here</p>
+              <p class="drop-sub">or <span class="link">browse files</span> · PNG or JPG, up to 16 MB</p>
+            </div>
+            <div class="image-wrap" id="imageWrap" hidden>
+              <img id="image" class="stage-image" alt="Uploaded chest X-ray">
+              <button class="remove-btn" id="removeBtn" title="Remove image" aria-label="Remove image">
+                <i class="ic" data-icon="x"></i>
+              </button>
+              <div class="image-caption" id="imageCaption"></div>
+            </div>
+          </div>
+
+          <div class="view-toggle" id="viewToggle" hidden>
+            <button class="view-btn active" data-view="original" type="button"><i class="ic" data-icon="image"></i><span>X-ray</span></button>
+            <button class="view-btn" data-view="heatmap" type="button"><i class="ic" data-icon="zap"></i><span>Attention</span></button>
+            <button class="view-btn" data-view="overlay" type="button"><i class="ic" data-icon="layers"></i><span>Overlay</span></button>
+          </div>
+
+          <div class="controls">
+            <label class="field-label" for="modelSelect">Screening model</label>
+            <select id="modelSelect" class="select">
+              {% for m in models %}
+              <option value="{{ m.key }}">{{ m.label }}</option>
+              {% endfor %}
+            </select>
+            <p class="model-note" id="modelNote"></p>
+            <button class="btn btn-primary btn-block" id="analyzeBtn" type="button" disabled>
+              <span class="spinner" hidden></span>
+              <span id="btnLabel">Analyze X-ray</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============ Assessment ============ -->
+      <section class="card">
+        <header class="card-head">
+          <h2 class="card-title"><i class="ic" data-icon="file-text"></i> Assessment</h2>
+          <span class="case-tag mono" id="caseTag" hidden></span>
+        </header>
+        <div class="card-body">
+
+          <div class="report" id="report">
+            <div class="result-empty" id="resultEmpty">
+              <i class="ui-icon ic" data-icon="activity"></i>
+              <p>Complete the patient details, upload a chest X-ray, and run the analysis to generate a structured assessment.</p>
+            </div>
+
+            <div class="report-body" id="reportBody" hidden>
+              <div class="diagnosis-row">
+                <div class="diagnosis-main">
+                  <span class="dx-label">Diagnosis</span>
+                  <span class="verdict-badge placeholder" id="verdictBadge">—</span>
+                </div>
+                <div class="gauge-wrap">
+                  <svg class="gauge" viewBox="0 0 96 96">
+                    <circle class="gauge-track" cx="48" cy="48" r="40"/>
+                    <circle class="gauge-arc" id="gaugeArc" cx="48" cy="48" r="40" pathLength="100"/>
+                  </svg>
+                  <div class="gauge-label">
+                    <span class="gauge-val" id="gaugeVal">0%</span>
+                    <span class="gauge-cap">confidence</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="output-grid">
+                <div class="metric">
+                  <span class="metric-k"><i class="ic" data-icon="cpu"></i> Model</span>
+                  <span class="metric-v" id="outModel">—</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-k"><i class="ic" data-icon="percent"></i> Normal</span>
+                  <span class="metric-v mono" id="outNormProb">—</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-k"><i class="ic" data-icon="percent"></i> Pneumonia</span>
+                  <span class="metric-v mono" id="outPneuProb">—</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-k"><i class="ic" data-icon="alert-circle"></i> Confidence level</span>
+                  <span class="metric-v" id="outLevel">—</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-k"><i class="ic" data-icon="clock"></i> Processing time</span>
+                  <span class="metric-v mono" id="outLatency">—</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-k"><i class="ic" data-icon="hash"></i> Case ID</span>
+                  <span class="metric-v mono" id="outCaseId">—</span>
+                </div>
+              </div>
+
+              <div class="prob-block">
+                <h3 class="prob-title">Class probabilities</h3>
+                {% for cls in class_names %}
+                <div class="prob-row" id="probRow_{{ cls }}">
+                  <div class="prob-label">{{ cls }}
+                    <span class="prob-val mono" id="probVal_{{ cls }}">—</span>
+                  </div>
+                  <div class="prob-track">
+                    <div class="prob-fill" id="probFill_{{ cls }}" style="width:0%"></div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="interpretation" id="interpretation"></div>
+
+              <div class="patient-line" id="patientLine">
+                <span class="p-name" id="pNameLine"></span>
+                <span class="p-sep">·</span>
+                <span class="p-meta" id="pMetaLine"></span>
+              </div>
+
+              <div class="meta-block">
+                <div class="meta-row"><span class="meta-k">Reported</span><span class="meta-v" id="metaTime"></span></div>
+                <div class="meta-row"><span class="meta-k">Saved</span><span class="meta-v" id="metaSaved"></span></div>
+              </div>
+            </div>
+
+            <div class="result-error" id="resultError"></div>
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      Mulch is an AI-assisted screening aid — decision support only, never a substitute for a qualified
+      clinical diagnosis. Interpret all findings in the context of the full radiograph and patient history.
+    </footer>
+
+    <div class="print-foot">
+      <div class="print-sign"><span>Reviewed by</span><span class="print-sign-line"></span></div>
+      <p>Mulch is an AI-assisted screening aid. This report was generated automatically and is for clinical
+      correlation only. Interpret all findings in the context of the full radiograph and patient history.</p>
+      <p class="print-generated">Generated by Mulch · beauttahkipruto</p>
+    </div>
+  </div>
+
+  <!-- ============ Saved assessments sheet ============ -->
+  <div class="overlay" id="recordsOverlay" hidden>
+    <div class="drawer">
+      <div class="drawer-head">
+        <h2 class="card-title"><i class="ic" data-icon="database"></i> Saved assessments</h2>
+        <button class="icon-btn" id="closeRecords" type="button" aria-label="Close">
+          <i class="ic" data-icon="x"></i>
+        </button>
+      </div>
+      <div class="drawer-sub">
+        <input type="text" id="recordSearch" class="input" placeholder="Search by patient name…">
+        <span class="record-count" id="recordCount"></span>
+      </div>
+      <div class="records-list" id="recordsList">
+        <div class="records-empty" id="recordsEmpty">
+          <i class="ui-icon ic" data-icon="database"></i>
+          <p>No saved assessments yet. Run an analysis and it will be recorded here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="modelData" type="application/json">{{ models | tojson }}</script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
